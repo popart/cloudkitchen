@@ -1,8 +1,9 @@
 import model.{Courier, Order}
+import util.OrderStats
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
-class OrderFulfiller extends Runnable {
+class OrderFulfillerFIFO extends Runnable {
   val running = new AtomicBoolean(false)
   var orderPrepper: Option[OrderPrepper] = None
   var courierDispatcher: Option[CourierDispatcher] = None
@@ -16,7 +17,7 @@ class OrderFulfiller extends Runnable {
       case None => ()
     }
     courierDispatcher match {
-      case Some(dispatcher) => dispatcher.dispatchCourier
+      case Some(dispatcher) => dispatcher.dispatchCourier("")
       case None => ()
     }
   }
@@ -38,13 +39,17 @@ class OrderFulfiller extends Runnable {
       if (order == null) order = orderQueue.poll
 
       if (courier != null && order != null) {
+        val pickupTime = System.currentTimeMillis
+        val stats = OrderStats.addStats(pickupTime, order, courier)
+
         println("delivering order to courier")
         println(order)
         println(courier)
+        println(s"pickupTime: $pickupTime, orderWaitTime: ${stats._1}, courierWaitTime: ${stats._2}")
+
         courier = null
         order = null
       }
     }
   }
-
 }

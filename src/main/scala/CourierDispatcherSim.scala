@@ -3,7 +3,7 @@ import java.util.concurrent.PriorityBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 trait CourierDispatcher {
-  def dispatchCourier
+  def dispatchCourier(orderId: String)
 }
 
 class CourierDispatcherSim(val availableCourierCallback: Courier => ()) extends CourierDispatcher with Runnable {
@@ -11,8 +11,8 @@ class CourierDispatcherSim(val availableCourierCallback: Courier => ()) extends 
   val running = new AtomicBoolean(false)
   val allCouriers = new PriorityBlockingQueue[Courier]
 
-  def dispatchCourier = {
-    allCouriers.put(new Courier)
+  def dispatchCourier(orderId: String) = {
+    allCouriers.put(new Courier(orderId))
   }
 
   def run() = {
